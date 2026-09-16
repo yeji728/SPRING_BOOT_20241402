@@ -10,4 +10,13 @@ import org.springframework.web.bind.annotation.GetMapping;
         model.addAttribute("data", "반갑습니다."); //model 설정
         return "hello"; //hello.html 연결
     }
+    @GetMapping("/hello2")
+    public String hello2(Model model){ //전송방식 GET
+        model.addAttribute("data", "홍길동님.");
+        model.addAttribute("data2", "방갑습니다.");
+        model.addAttribute("data3", "오늘.");
+        model.addAttribute("data4", "날씨는."); //model 설정
+        model.addAttribute("data5", "매우 좋습니다.");
+        return "hello2"; //hello.html 연결
+    }
 }
