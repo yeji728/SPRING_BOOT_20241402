@@ -8,12 +8,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.model.domain.TestDB;
 import com.example.demo.model.service.TestService;
 
+@Controller
 public class DemoController {
 
     // 클래스 하단 작성
     @Autowired
     TestService testService; // DemoController 클래스 아래 객체 주입
-//컨트롤러 어노테이션 명시
+    //컨트롤러 어노테이션 명시
     @GetMapping("/hello")
     public String hello(Model model){ //전송방식 GET
         model.addAttribute("data", "반갑습니다."); //model 설정
