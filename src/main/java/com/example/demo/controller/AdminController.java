@@ -37,13 +37,18 @@ public class AdminController {
 
     @PostMapping("/members/{id}/delete") // POST /admin/members/3/delete
     public String delete(@PathVariable Long id, RedirectAttributes redirect) {
-    try {
-    memberService.deleteMember(id);
-    redirect.addFlashAttribute("message", "회원을 삭제했습니다.");
-    } catch (IllegalArgumentException e) {
-    redirect.addFlashAttribute("error", e.getMessage());
+        try {
+            memberService.deleteMember(id);
+            redirect.addFlashAttribute("message", "회원을 삭제했습니다.");
+        } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/members";
     }
-    return "redirect:/admin/members";
+
+    @GetMapping("/members-api") // 우리가 만든 JSON API 를 fetch 로 사용하는 회원 관리 화면
+    public String membersApi() {
+        return "admin/members-api"; // 데이터는 화면이 API 로 가져온다
     }
 }
 

@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.model.domain.TestDB;
 import com.example.demo.model.service.TestService;
 
+import java.util.List;
+
 @Controller
 public class DemoController {
 
@@ -34,8 +36,10 @@ public class DemoController {
     // 하단에 맵핑 이어서 추가
     @GetMapping("/testdb")
         public String getAllTestDBs(Model model) {
+            // List<TestDB> users = testService.findAll();
+            // model.addAttribute("users", users);
         TestDB test = testService.findByName("홍길동");
-        model.addAttribute("data4", test);
+        model.addAttribute("user", test);
         System.out.println("데이터 출력 디버그 : " + test);
         return "testdb";
     }
