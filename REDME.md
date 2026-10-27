@@ -1,6 +1,10 @@
 # 포트폴리오 프로젝트 제작(학번 : 20241402 이름 : 장예지)
-<img src="/src/main/resources/static/images/5-1.png">
-<img src="/src/main/resources/static/images/5-2.png">
 
-# 7주차 정리
-# 
+# 중간고사 정리
+# 중간고사 준비를 하며 간단히 7주차까지 배웠던 내용을 정리하는 시간을 가졌다. 1학기에는 Quarkus를 사용하여 웹을 제작했지만 이번 학기에서는 SpringBoot를 사용하여 풀스택으로 웹을 개발하고 있다. 이번학기는 Thymeleaf라는 템플릿 엔진을 사용한다. 이전 학기와 다르게 특이한 점은 th:text=${data} 처럼 ${...} 변수 표현식을 이용한다. html에 적은 걸 @controller에서 매핑해주고 페이지를 구성해주는 model을 설정하여 html과 연결하여 보여준다. 또 포트폴리오 웹 제작을 기반으로 html을 수정하고,  href="..." 경로를 th:href="@{...}"란 문법을 사용해 수정했다. 
+# 이번에는 MYSQL을 연동하여 본격적으로 데이터베이스를 연동한다. 먼저 pom.xml로 들어가서 의존성을 확인하고 없는 경우에는 직접 추가한다. 또, 내부 구조를 M,V,C,Service,Repository로 구분해줬다. 전체적인 구조는 브라우저에서 요청하면 Controller에서 url 매핑을 하고 service부분을 호출하여 요청을 처리해준다. 호출된 service는 데이터를 가공하고 repository를 호출하여 비즈니스 로직을 처리한다. 호출된 Repository가 DB에 접근을 할 수 있게 된다. 여기에서 쿼리를 생성하고 실행하고 JPA를 호출한다. JPA는 영속성을 관리하고 sql을 자동으로 생성해준다. 그걸 받은 sql이 결과를 반환해서 역순으로 돌아와 웹브라우저에 응답을 하는 형태이다. 
+# Entity는 영속 계층으로 DB 테이블을 매핑해준다. @Repository는 db를 제어하는 기능이다. 서비스에서는 주요 로직을 적는데, @Autowired는 객체 의존성 주입을 해준다. 또 sql 테이블에 들어가 insert로 직접 사용자를 추가하는 방법도 배웠다. 
+# 이전학기에는 SHA-256을 사용하여 해시했지만 이번학기는 BCrypt를 활용하였다. 비밀번호와 salt를 결합하여 나타낸다는 특징이 있다. 필터 기반으로 로그인/로그아웃 보안을 진행했다. securityconfig로 보안을 설정했다. @Bean을 통해 보안 필터 체인을 등록한다. .authorizeHttpRequests로 누구나 접근 가능하거나 로그인이 필요한 url을 구분시켰다. permitAll()은 누구나 접근이 가능한 곳을 의미하고 anyRequest().authenticate()는 나머지는 전부 로그인이 필요하다는 것이다. 또 Member.java를 생성하여 아이디가 중복, 비밀번호, 이름, 권한 등을 분리한다. 만약 아이디가 중복이 된다면 repository를 통해 sql에서 중복을 확인하도록 한다. sec:authorize와 sec:authentication 문법을 활용하여 조건에 따라 출력시킨다.
+# hasRole()을 활용하여 권한 검사를 한다. 화면에서 sec:authorize는 보이거나 숨기는 것만 가능하고 URL resquestMatchers를 사용하여 컨트롤러에 도착하기 전에 1차로 차단을 하고 @PreAuthorize를 통해 메서드 실행 직전에 차단해야 한다. 이렇게 하면 user의 권한을 가진 사람은 admin에 접속할 수 없게 된다. 
+# api로 회원을 관리하게 한다. postman이란 프로그램을 사용하여 api를 호출한다. get이 조회, post가 생성, patch가 수정, delete가 섹저로 이것을 통해 프로그램에서 수정할 수 있다. 새로운 controller폴더를 만들어 회원 관리 api 어노테이션을 활용한다. postman에서 회원을 등록하려면 {"username": "postman1", ...} 이런식으로 작성을 해야한다.
+# 2-7주차를 배우고 정리하며 어디에서 공부가 부족했는지 알 수 있었다. 또, 수업을 들으며 개인적으로 데이터베이스에 대해 더 공부하고 싶은 마음이 생기게 되었다. 
