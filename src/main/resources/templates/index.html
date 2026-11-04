@@ -41,9 +41,16 @@
             @media (min-width: 992px) {
                 .navbar-expand-lg .navbar-nav .nav-link { margin-left: 12px; margin-right: 12px; }
             }
-            @media (min-width: 992px) and (max-width: 1199px) {
-                .navbar-expand-lg .navbar-nav .nav-link { margin-left: 7px; margin-right: 7px; font-size: 15px; }
+            @media (min-width: 1200px) and (max-width: 1399px) {
+                .navbar-expand-lg .navbar-nav .nav-link { margin-left: 8px; margin-right: 8px; font-size: 15px; }
                 .navbar i.navbar-icon { display: none; }
+            }
+            @media (min-width: 992px) and (max-width: 1199px) {
+                .navbar-expand-lg .navbar-nav .nav-link { margin-left: 4px; margin-right: 4px; font-size: 13.5px; }
+                .navbar i.navbar-icon { display: none; }
+                .navbar .role-badge { display: none; }
+                .navbar .custom-btn { padding: 8px 14px; }
+                .navbar-brand { font-size: 24px; }
             }
         </style>
         
@@ -71,7 +78,7 @@ https://templatemo.com/tm-578-first-portfolio
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <a th:href="@{/}" class="navbar-brand mx-auto mx-lg-0">First</a>
+                <a th:href="@{/}" class="navbar-brand mx-auto mx-lg-0">MyPage</a>
 
                 <!-- [5주차] 모바일 화면 : 로그인 / 로그아웃 버튼 -->
                 <div class="d-flex align-items-center d-lg-none">
@@ -106,6 +113,13 @@ https://templatemo.com/tm-578-first-portfolio
                         <li class="nav-item">
                             <a class="nav-link click-scroll" href="#section_5">연락처</a>
                         </li>
+
+
+                        <!-- [9주차] 게시판 : 목록·상세는 누구나, 글쓰기는 로그인 -->
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="@{/board}">게시판</a>
+                        </li>
+
 
                         <!-- [5주차] 회원 전용 페이지 : 로그인하지 않으면 로그인 화면으로 이동 -->
                         <li class="nav-item">
@@ -227,12 +241,12 @@ https://templatemo.com/tm-578-first-portfolio
                                 <div class="profile-body">
                                     <p>
                                         <span class="profile-small-title">Name</span> 
-                                        <span>Joshua Morgan</span>
+                                        <span>YeJi Chang</span>
                                     </p>
 
                                     <p>
                                         <span class="profile-small-title">Birthday</span> 
-                                        <span>Aug 12, 1986</span>
+                                        <span>Jul 28</span>
                                     </p>
 
                                     <p>
@@ -242,7 +256,7 @@ https://templatemo.com/tm-578-first-portfolio
 
                                     <p>
                                         <span class="profile-small-title">Email</span> 
-                                        <span><a href="mailto:hello@josh.design">hello@josh.design</a></span>
+                                        <span><a href="mailto:hello@josh.design">yeji@</a></span>
                                     </p>
                                 </div>
                             </div>

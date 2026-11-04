@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN") // [6주차] 관리자만
                 // [7주차] 경로 추가
                 .requestMatchers("/api/hello").permitAll()
+                // [9주차] 목록
+                .requestMatchers("/board", "/board/{id:\\d+}").permitAll() // 게시판 목록·상세 : 누구나
                 .anyRequest().authenticated()) //나머지 : 로그인 필요 
             .formLogin(form -> form // 2. 폼 로그인 설정 (인증)
                 .loginPage("/login")
