@@ -68,4 +68,18 @@ public class CartController {
         }
         return "redirect:/cart";
     }
+    // [11주차 연습문제] 신청 취소
+    @PostMapping("/enrollments/{enrollmentId}/cancel")
+    public String cancel(@PathVariable Long enrollmentId,
+                        Principal principal,
+                        RedirectAttributes redirect) {
+        try {
+            enrollmentService.cancel(enrollmentId, principal.getName());
+            redirect.addFlashAttribute("message", "신청이 취소되었습니다.");
+        } catch (IllegalStateException e) {
+            redirect.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/cart";
+    }
 }

@@ -20,9 +20,10 @@ public class AdminApiController {
     MemberService memberService;
     //전체 회원 목록 조회
     @GetMapping // 회원 목록 : GET /api/admin/members
-    public List<MemberResponse> list() {
-        List<Member> members = memberService.findAll();
-        return members.stream().map(MemberResponse::from).toList(); // 엔티티 목록 → DTO 목록
+    public List<MemberResponse> list(
+            @RequestParam(name = "keyword", required = false) String keyword) {
+        List<Member> members = memberService.searchMembers(keyword);
+        return members.stream().map(MemberResponse::from).toList();
     }
     //회원 1명만 조회
     @GetMapping("/{id}") // 회원 1명 : GET /api/admin/members/3 <-특정 회원 아이디 명시
@@ -33,32 +34,27 @@ public class AdminApiController {
     }
     @PostMapping // 회원 등록 : POST /api/admin/members (본문 JSON → MemberForm)
     public ResponseEntity<?> create(@RequestBody MemberForm form) {
-        try {
-            Member saved = memberService.signup(form); // 5주차 회원가입 로직 재사용 (BCrypt)
-                return ResponseEntity
-                    .created(URI.create("/api/admin/members/" + saved.getId())) // 201 + Location
-                    .body(MemberResponse.from(saved));
-        } catch (IllegalArgumentException e) { // 중복 아이디, 빈 값 …
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage())); // 400
-        }
+        Member saved = memberService.signup(form);
+        return ResponseEntity
+            .created(URI.create("/api/admin/members/" + saved.getId()))
+            .body(MemberResponse.from(saved));
     }
 
     @PatchMapping("/{id}/role") // 권한 변경 : PATCH /api/admin/members/3/role {"role":"ADMIN"}
     public ResponseEntity<?> changeRole(@PathVariable Long id, @RequestBody RoleRequest request) {
-        try {
-            Member member = memberService.changeRole(id, request.role());
-            return ResponseEntity.ok(MemberResponse.from(member)); // 200 OK + 바뀐 회원
-        } catch (IllegalArgumentException e) { // 허용되지 않는 권한, 없는 회원 …
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        Member member = memberService.changeRole(id, request.role());
+        return ResponseEntity.ok(MemberResponse.from(member));
     }
     @DeleteMapping("/{id}") // 회원 삭제 : DELETE /api/admin/members/3
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        try {
-            memberService.deleteMember(id);
-            return ResponseEntity.noContent().build(); // 204 No Content (돌려줄 본문 없음)
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+        memberService.deleteMember(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // [7주차 연습문제] 공통 오류 처리
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleError(IllegalArgumentException e) {
+        return ResponseEntity.badRequest()
+            .body(Map.of("error", e.getMessage()));
     }
 }

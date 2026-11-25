@@ -34,6 +34,18 @@ public class PostService {
         return postRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
+    // [9주차 연습문제] 내가 작성한 게시글 조회
+    public Page<Post> findMyPosts(String username, int page) {
+        Member author = memberRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        PageRequest pageable = PageRequest.of(
+            Math.max(page, 0), PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "id"));
+
+        return postRepository.findByAuthor(author, pageable);
+    }
+
     public Post write(PostForm form, String username) { // 글쓰기 (작성자 = 로그인한 회원)
         validate(form);
         Member author = memberRepository.findByUsername(username)
@@ -72,6 +84,23 @@ public class PostService {
         return postRepository.search(keyword.trim(), pageable); // 검색 결과도 10개씩
     }
 
+    // [10주차 연습문제] 작성자로 검색
+    public Page<Post> findPage(String keyword, String type, int page) {
+        PageRequest pageable = PageRequest.of(
+            Math.max(page, 0), PAGE_SIZE,
+            Sort.by(Sort.Direction.DESC, "id"));
+
+        if (keyword == null || keyword.isBlank()) {
+            return postRepository.findAll(pageable);
+        }
+
+        if ("writer".equals(type)) {
+            return postRepository.searchByWriter(keyword.trim(), pageable);
+        }
+
+        return postRepository.search(keyword.trim(), pageable);
+    }
+
     // [11주차] 단계 3 : 바구니에 담긴 글들 (번호 목록으로 한 번에)
     public List<Post> findAllById(Collection<Long> ids) {
     return postRepository.findAllById(ids); // SELECT ... WHERE id IN (?, ?, ?)
@@ -80,6 +109,13 @@ public class PostService {
     public Post findById(Long id) { // 글 1개 (없으면 404 → templates/error/404.html)
         return postRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "글이 존재하지 않습니다."));
+    }
+
+    // [9주차 연습문제] 게시글 조회수 증가
+    public Post increaseViewCount(Long id) {
+        Post post = findById(id);
+        post.setViewCount(post.getViewCount() + 1);
+        return postRepository.save(post);
     }
 
     public Post findForEdit(Long id) { // 수정 화면에 보여 줄 글
@@ -98,6 +134,12 @@ public class PostService {
     public void delete(Long id) { // 글 삭제
         Post post = findById(id);
         if (!isAdmin()) checkWriter(post); // ★ 추가 : 관리자는 누구 글이든 삭제 가능
+
+        // [11주차 연습문제] 신청자가 있는 모집글 삭제 방지
+        if (post.isRecruit() && post.getAppliedCount() > 0) {
+            throw new IllegalArgumentException("신청자가 있는 모집글은 삭제할 수 없습니다.");
+        }
+
         postRepository.delete(post); // DELETE
     }
 

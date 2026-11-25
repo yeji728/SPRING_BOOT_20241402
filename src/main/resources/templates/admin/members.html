@@ -136,19 +136,19 @@
                                     <td>
                                         <!-- 권한 변경 : POST /admin/members/{id}/role , 파라미터 role -->
                                         <form th:action="@{/admin/members/{id}/role(id=${m.id})}" method="post" class="d-flex gap-2 m-0">
-                                            <select name="role" class="form-select role-select">
+                                            <select name="role" class="form-select role-select" th:disabled="${m.role == 'ADMIN'}">
                                                 <option value="USER" th:selected="${m.role == 'USER'}">USER</option>
                                                 <option value="MANAGER" th:selected="${m.role == 'MANAGER'}">MANAGER</option>
                                                 <option value="ADMIN" th:selected="${m.role == 'ADMIN'}">ADMIN</option>
                                             </select>
-                                            <button type="submit" class="btn btn-outline-primary btn-sm-custom">변경</button>
+                                            <button type="submit" class="btn btn-outline-primary btn-sm-custom" th:disabled="${m.role == 'ADMIN'}">변경</button>
                                         </form>
                                     </td>
                                     <td>
                                         <!-- 회원 삭제 : POST /admin/members/{id}/delete -->
                                         <form th:action="@{/admin/members/{id}/delete(id=${m.id})}" method="post" class="m-0"
-                                              onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                                            <button type="submit" class="btn btn-outline-danger btn-sm-custom"><i class="bi-trash"></i></button>
+                                                onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm-custom" th:disabled="${m.role == 'ADMIN'}"><i class="bi-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>

@@ -31,7 +31,7 @@ private CommentRepository commentRepository;
 
 
 // 관리자가 부여할 수 있는 권한 (화면에서 넘어온 값을 그대로 믿지 않는다)
-private static final List<String> ROLES = List.of("USER", "ADMIN");
+private static final List<String> ROLES = List.of("USER", "ADMIN", "MANAGER");
 
 public Member signup(MemberForm form) { // 회원가입
     if (isBlank(form.getUsername()) || isBlank(form.getPassword()) || isBlank(form.getName())) {
@@ -76,7 +76,16 @@ public Member signup(MemberForm form) { // 회원가입
     public List<Member> findAll() { // MemberService : 전체 회원 (id 순서)
         return memberRepository.findAll(Sort.by("id"));
     }
+    // 7주차 연습문제
+    public List<Member> searchMembers(String keyword) {
+        if (isBlank(keyword)) {
+            return findAll();
+        }
 
+        return memberRepository
+            .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+                keyword.trim(), keyword.trim());
+    }
     @PreAuthorize("hasRole('ADMIN')") // 관리자만 실행 가능 (2차 잠금)
     public Member changeRole(Long id, String role) { // 권한 변경
         if (!ROLES.contains(role)) { // 허용된 권한만
@@ -84,6 +93,10 @@ public Member signup(MemberForm form) { // 회원가입
         }
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+            // 6주차 연습문제
+        if ("ADMIN".equals(member.getRole())) {
+            throw new IllegalArgumentException("관리자의 권한은 변경할 수 없습니다.");
+        }
         member.setRole(role);
         return memberRepository.save(member); // UPDATE (id 가 있으면 수정)
     }
@@ -92,6 +105,11 @@ public Member signup(MemberForm form) { // 회원가입
     public void deleteMember(Long id) { // 회원 삭제
         Member member = memberRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+            // 6주차 연습문제
+            if ("ADMIN".equals(member.getRole())) {
+                throw new IllegalArgumentException("관리자 계정은 삭제할 수 없습니다.");
+            }
 
             if (postRepository.existsByAuthor(member) || commentRepository.existsByAuthor(member)) {
                 throw new IllegalArgumentException("작성한 글이나 댓글이 있는 회원은 삭제할 수 없습니다.");

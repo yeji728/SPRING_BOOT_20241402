@@ -33,14 +33,31 @@ public class BoardController {
 
     @GetMapping // 목록 : GET /board?page=0&keyword=스프링 (누구나)
     public String list(@RequestParam(defaultValue = "0") int page,
-                        @RequestParam(required = false) String keyword, Model model) {
-        Page<Post> posts = postService.findPage(keyword, page);
+                        @RequestParam(required = false) String keyword,
+                        @RequestParam(defaultValue = "all") String type, Model model) {
+        Page<Post> posts = postService.findPage(keyword, type, page);
         model.addAttribute("posts", posts.getContent());
         model.addAttribute("page", posts);
         model.addAttribute("keyword", keyword); // 검색창에 검색어 유지, 페이지 링크에도 붙인다
+        model.addAttribute("type", type);
         return "board/list";
     }
+    // [9주차 연습문제] 내가 쓴 글 모아 보기
+    @GetMapping("/my")
+    public String myPosts(
+            @RequestParam(defaultValue = "0") int page,
+            Principal principal, Model model) {
 
+        Page<Post> posts = postService.findMyPosts(principal.getName(), page);
+
+        model.addAttribute("posts", posts.getContent());
+        model.addAttribute("page", posts);
+        model.addAttribute("keyword", "");
+        model.addAttribute("listTitle", "내가 쓴 글");
+        model.addAttribute("pageUrl", "/board/my");
+
+        return "board/list";
+    }
 
     @GetMapping("/write") // 글쓰기 화면 : GET /board/write (로그인 필요)
     public String writeForm() {
@@ -58,8 +75,8 @@ public class BoardController {
     }
 
     @GetMapping("/{id}") // 상세 : GET /board/3 (누구나)
-    public String detail(@PathVariable Long id, Model model) {  
-        Post post = postService.findById(id);
+    public String detail(@PathVariable Long id, Model model) { 
+        Post post = postService.increaseViewCount(id);
         model.addAttribute("post", post);
         model.addAttribute("comments", commentService.findByPost(post)); // ② 댓글 목록 → 화면에 댓글 영역
         return "board/detail";
@@ -89,8 +106,12 @@ public class BoardController {
 
     @PostMapping("/{id}/delete") // 삭제 처리 : POST /board/3/delete
         public String delete(@PathVariable Long id) {
-        postService.delete(id);
-        return "redirect:/board?deleted"; // 목록 + "삭제되었습니다"
+            try {
+            postService.delete(id);
+            return "redirect:/board?deleted"; // 목록 + "삭제되었습니다"
+        } catch (IllegalArgumentException e) {
+            // [11주차 연습문제 2] 삭제 실패 시 상세 화면으로
+            return "redirect:/board/" + id + "?deleteError";
+        }
     }
-
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.example.demo.model.domain.Enrollment;
 import com.example.demo.model.domain.Member;
@@ -12,6 +13,11 @@ import com.example.demo.model.repository.EnrollmentRepository;
 import com.example.demo.model.repository.MemberRepository;
 import com.example.demo.model.repository.PostRepository;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.example.demo.model.dto.Notification;
+// import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.example.demo.model.dto.SeatMessage;
+import org.springframework.context.ApplicationEventPublisher;
 
 
 @Service // [11주차] 단계 4 : 신청 서비스
@@ -22,6 +28,8 @@ public class EnrollmentService {
     private PostRepository postRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired // [12주차] 실시간 메시지
+    private ApplicationEventPublisher eventPublisher; // [12주차] 단계 3 : 이벤트 발행 (보내기는 커밋 뒤에 RealtimeNotifier 가)
     // 내 신청 내역
     public List<Enrollment> findMine(String username) {
         return enrollmentRepository.findByMember_UsernameOrderByIdDesc(username);
@@ -52,7 +60,34 @@ public class EnrollmentService {
             enrollmentRepository.save(enrollment); // ① INSERT 신청 내역
             post.setAppliedCount(post.getAppliedCount() + 1);
             postRepository.save(post); // ② UPDATE 신청 인원 + 1 (남은 자리 - 1)
+            // messagingTemplate.convertAndSend("/topic/seats", SeatMessage.from(post)); // [12주차] 단계 2 : 남은 자리를 바로 보낸다
+            eventPublisher.publishEvent(SeatMessage.from(post)); // [12주차] 단계 3 : 이벤트만 던진다 (커밋되면 RealtimeNotifier 가 보낸다)
+            String writer = post.getAuthor().getUsername();
+            if (!writer.equals(username)) { // [12주차] 단계 4 : 모집글 쓴 사람에게 알림 (내 글에 내가 신청하면 생략)
+            eventPublisher.publishEvent(new Notification(writer,
+            member.getName() + "님이 '" + post.getTitle() + "' 에 신청했습니다. ("
+            + post.getAppliedCount() + "/" + post.getCapacity() + ")", post.getId()));
+            }
         }
         return postIds.size();
+    }
+
+    // [11주차 연습문제] 신청 취소
+    @Transactional
+    public void cancel(Long enrollmentId, String username) {
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+            .orElseThrow(() -> new IllegalStateException("신청 내역이 존재하지 않습니다."));
+
+        // 본인이 신청한 내역만 취소 가능
+        if (!enrollment.getMember().getUsername().equals(username)) {
+            throw new IllegalStateException("본인의 신청만 취소할 수 있습니다.");
+        }
+
+        Post post = enrollment.getPost();
+
+        enrollmentRepository.delete(enrollment); // 신청 내역 삭제
+
+        post.setAppliedCount(Math.max(0, post.getAppliedCount() - 1));
+        postRepository.save(post); // 신청 인원 1명 감소
     }
 }
