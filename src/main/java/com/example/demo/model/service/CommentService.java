@@ -16,6 +16,10 @@ import com.example.demo.model.domain.Post;
 import com.example.demo.model.repository.CommentRepository;
 import com.example.demo.model.repository.MemberRepository;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
+import com.example.demo.model.dto.Notification;
+
 @Service // 댓글 서비스
 public class CommentService {
     @Autowired
@@ -24,10 +28,13 @@ public class CommentService {
     private MemberRepository memberRepository;
     @Autowired
     private PostService postService; // 글 찾기는 9주차 PostService 를 그대로 쓴다
+    @Autowired // [12주차 연습문제] 댓글 알림 이벤트
+    private ApplicationEventPublisher eventPublisher;
     public List<Comment> findByPost(Post post) { // 이 글의 댓글 목록
         return commentRepository.findByPostOrderByIdAsc(post);
     }
 
+    @Transactional // [12주차 연습문제] 댓글 저장 후 알림
     public Comment write(Long postId, String content, String username) { // 댓글 쓰기
         if (content == null || content.isBlank() || content.length() > 500) {
             throw new IllegalArgumentException("댓글은 1~500자로 입력하세요.");
@@ -40,8 +47,21 @@ public class CommentService {
         comment.setPost(post); // 어느 글의 댓글인지
         comment.setAuthor(author); // 작성자는 서버가 정한다
         comment.setCreatedAt(LocalDateTime.now());
-        return commentRepository.save(comment); // INSERT
-    }
+        Comment saved = commentRepository.save(comment); // INSERT
+
+        // [12주차 연습문제] 게시글 작성자에게 댓글 알림
+        String writer = post.getAuthor().getUsername();
+
+        if (!writer.equals(username)) {
+            eventPublisher.publishEvent(new Notification(
+                writer,
+                author.getName() + "님이 '" + post.getTitle()
+                + "'에 댓글을 남겼습니다.",
+                post.getId()));
+        }
+
+        return saved;
+            }
 
     public void delete(Long id) { // 댓글 삭제 (본인 또는 관리자)
         Comment comment = commentRepository.findById(id)

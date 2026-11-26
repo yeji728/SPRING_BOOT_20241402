@@ -89,5 +89,17 @@ public class EnrollmentService {
 
         post.setAppliedCount(Math.max(0, post.getAppliedCount() - 1));
         postRepository.save(post); // 신청 인원 1명 감소
+        // [12주차 연습문제 1] 신청 취소 실시간 반영
+        eventPublisher.publishEvent(SeatMessage.from(post));
+
+        // 모집글 작성자에게 신청 취소 알림
+        String writer = post.getAuthor().getUsername();
+        if (!writer.equals(username)) {
+            eventPublisher.publishEvent(new Notification(
+                writer,
+                enrollment.getMember().getName() + "님이 '"
+                + post.getTitle() + "' 신청을 취소했습니다.",
+                post.getId()));
+        }
     }
 }
